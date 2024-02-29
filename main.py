@@ -2,8 +2,6 @@ import socket, sys
 
 if __name__ == "__main__":
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(1)
 
     if len(sys.argv) >= 2:
         host = sys.argv[1]
@@ -11,34 +9,37 @@ if __name__ == "__main__":
         host = input("Qual o host que deseja escanear")
 
     if len(sys.argv) >= 3:
-        port1  = sys.argv[2]
+        port1_str  = sys.argv[2]
     else:
-        port1 = input("Qual o port você deseja escanear?")
+        port1_str = input("Qual o port você deseja escanear?")
 
 
     #Análise via range
     if len(sys.argv) == 4:
-        port2 = sys.argv[3]
+        port2_str = sys.argv[3]
         
         try:
-            port1 = int(port1)
+            port1 = int(port1_str)
         except:
             print("input invalido para o primeiro port")
             exit(1)
+
         try:
-            port2 = int(port2)
+            port2 = int(port2_str)
         except:
             print("input invalido para o segundo port")
             exit(1)
 
 
         for port in range(port1, port2):
-            connection = s.connect_ex((host,port))
-            if connection == 0:
-                print(f"port {port} is open", end = "")
-                try:
-                    print("--", socket.getservbyport(port, ''))
-                except:
-                    print("")
-
-
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(0.5)
+                    if s.connect_ex((host, port)) == 0:
+                        print(f"port {port} is open", end = "")
+                        try:
+                            print(f"-- {s.socket.getservbyport(port, 'tcp')}")
+                        except:
+                            print("")
+            except Exception as err:
+                print(err)
